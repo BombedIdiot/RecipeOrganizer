@@ -363,7 +363,7 @@ public class Main extends Application {
 
         // Main Window setup
         SplitPane mainWindow = new SplitPane(leftPane, rightPane);
-        mainWindow.setMinSize(1500, 600);
+        mainWindow.setMinSize(1000, 600);
         mainWindow.setDividerPositions(0.3);
         Scene scene = new Scene(mainWindow);
  //       scene.getStylesheets().add("UI/styles.css");

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package software.blowtorch.recipeorganizer;
 
 import java.sql.*;
@@ -147,7 +142,7 @@ public class DBHelper {
             System.err.println("Exception: " + ex.getMessage()+" in createDatabaseTables");
         }
         try {
-            statement.close();
+            if (statement != null)  statement.close();
             conn.close();
         } catch (SQLException ex) {
             System.err.println("Exception: " + ex.getMessage()+" in createDatabaseTables");
@@ -179,9 +174,9 @@ public class DBHelper {
             return 0;
         } finally {
             try {
-                rs.close();
-                stmt.close();
-                conn.close();
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception :"+ex.getMessage()+" in doesXExist");
             }
@@ -208,11 +203,11 @@ public class DBHelper {
             return 0;
         } finally {
             try {
-                rs.close();
-                stmt.close();
-                conn.close();
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
-                System.err.println("Exception :"+ex.getMessage()+" in writeIngredient");
+                System.err.println("Exception :"+ex.getMessage()+" in writeOneValueToDB");
             }
         }
     }

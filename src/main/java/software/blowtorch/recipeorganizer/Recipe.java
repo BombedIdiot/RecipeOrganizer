@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package software.blowtorch.recipeorganizer;
 
 import java.sql.Connection;
@@ -78,8 +73,8 @@ public class Recipe {
             System.err.println("Error :" + ex.getMessage()+" in saveRecipeIngredients");
         } finally {
             try {
-                stmt.close();
-                conn.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
                 System.err.println("Error :" + ex.getMessage()+" in saveRecipeIngredients");
             }
@@ -103,8 +98,8 @@ public class Recipe {
             System.err.println("Error :" + ex.getMessage()+" in saveRecipeIngredients");
         } finally {
             try {
-                stmt.close();
-                conn.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
                 System.err.println("Error :" + ex.getMessage()+" in saveRecipeIngredients");
             }
@@ -160,10 +155,8 @@ public class Recipe {
             statement.executeUpdate();
             statement.close();
             conn.close();
-            return;
         } catch (SQLException ex) {
             System.err.println("Exception: " + ex.getMessage()+" in removeRecipe");
-            return;
         }
     }
 
@@ -176,10 +169,8 @@ public class Recipe {
             statement.executeUpdate();
             statement.close();
             conn.close();
-            return;
         } catch (SQLException ex) {
             System.err.println("Exception: " + ex.getMessage()+" in deleteIngredientsFromRecipe");
-            return;
         }
     }
 
@@ -192,10 +183,8 @@ public class Recipe {
             statement.executeUpdate();
             statement.close();
             conn.close();
-            return;
         } catch (SQLException ex) {
             System.err.println("Exception: " + ex.getMessage()+" in deleteDirectionsFromRecipe");
-            return;
         }
     }
 
@@ -227,9 +216,9 @@ public class Recipe {
             return null;
         } finally {
             try {
-                rs.close();
-                stmt.close();
-                conn.close();
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception : " + ex.getMessage()+" in getRecipeListFromCategory");
             }

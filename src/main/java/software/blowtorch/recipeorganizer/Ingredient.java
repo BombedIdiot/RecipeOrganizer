@@ -76,9 +76,9 @@ public class Ingredient {
             return ing;
         } finally {
             try {
-                rs.close();
-                stmt.close();
-                conn.close();
+                if (rs != null)rs.close();
+                if (stmt != null)stmt.close();
+                if (conn != null)conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception :" + ex.getMessage() + " in getIngredientsByRecipeID");
             }
@@ -116,9 +116,9 @@ public class Ingredient {
             return y;
         } finally {
             try {
-                rs.close();
-                stmt.close();
-                conn.close();
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception :" + ex.getMessage() + " in getIngredientsByRecipeID");
             }

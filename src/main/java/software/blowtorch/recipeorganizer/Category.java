@@ -1,14 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package software.blowtorch.recipeorganizer;
 
-/**
- *
- * @author vinny
- */
 
 
 import java.sql.*;
@@ -33,7 +24,7 @@ public class Category {
             statement = conn.createStatement();
             rs = statement.executeQuery("SELECT "+ CATEGORY_ID +", "+ CATEGORY_NAME +" FROM "+ CATEGORY_TABLE);
             try {
-                List<String> category = new ArrayList<String>();
+                List<String> category = new ArrayList<>();
                 if (rs.next() == false) {
                     return category;
                 } else {
@@ -51,9 +42,9 @@ public class Category {
             return null;
         } finally {
             try {
-                rs.close();
-                statement.close();
-                conn.close();
+                if (rs != null) rs.close();
+                if (statement != null) statement.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception: " + ex.getMessage()+" in getCategoryAll");
             }
@@ -75,8 +66,8 @@ public class Category {
             return false;
         } finally {
             try {
-                statement.close();
-                conn.close();
+                if (statement != null) statement.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception: "+ex.getMessage()+" in editCategoryName");
             }
@@ -102,9 +93,9 @@ public class Category {
             return null;
         } finally {
             try {
-                rs.close();
-                statement.close();
-                conn.close();
+                if (rs != null) rs.close();
+                if (statement != null) statement.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception: " + ex.getMessage()+" in getCategoryByID");
             }
@@ -129,9 +120,9 @@ public class Category {
             return 0;
         } finally {
             try {
-                rs.close();
-                statement.close();
-                conn.close();
+                if (rs != null)rs.close();
+                if (statement != null)statement.close();
+                if (conn != null)conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception: " + ex.getMessage()+" in getCategoryID");
             }
@@ -172,8 +163,8 @@ public class Category {
             return 0;
         } finally {
             try {
-                statement.close();
-                conn.close();
+                if (statement != null) statement.close();
+                if (conn != null) conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception: "+ex.getMessage()+" in addCategory");
             }

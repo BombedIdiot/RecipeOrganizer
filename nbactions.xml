@@ -10,7 +10,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>--module-path /opt/javafx-sdk-13.0.2/lib --add-modules javafx.controls,javafx.fxml -classpath %classpath ${packageClassName}</exec.args>
+                <exec.args>--module-path /opt/javafx-sdk-13.0.2/lib --add-modules javafx.controls,javafx.fxml -classpath %classpath software.blowtorch.recipeorganizer.Main</exec.args>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>

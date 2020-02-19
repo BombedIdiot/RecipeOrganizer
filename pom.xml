@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>software.blowtorch</groupId>
     <artifactId>RecipeOrganizer</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
@@ -29,6 +29,7 @@
                 <version>3.8.0</version>
                 <configuration>
                     <release>11</release>
+                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
             <plugin>
@@ -41,4 +42,6 @@
             </plugin>
         </plugins>
     </build>
+    <name>Recipe Organizer</name>
+    <description>Application to organize recipes</description>
 </project>

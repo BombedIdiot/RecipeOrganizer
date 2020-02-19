@@ -1,14 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package software.blowtorch.recipeorganizer;
 
-/**
- *
- * @author vinny
- */
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -60,9 +51,9 @@ public class Directions {
             return dir;
         } finally {
             try {
-                rs.close();
-                stmt.close();
-                conn.close();
+                if (rs != null)rs.close();
+                if (stmt != null)stmt.close();
+                if (conn != null)conn.close();
             } catch (SQLException ex) {
                 System.err.println("Exception :" + ex.getMessage() + " in getDirectionsByRecipeID");
             }

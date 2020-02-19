@@ -1,12 +1,8 @@
 package software.blowtorch.recipeorganizer;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
-import javafx.util.Callback;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,8 +11,6 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,37 +46,28 @@ public class Main extends Application {
         categorySelectorBox.getChildren().addAll(categoryTlbr, categoryList);
 
 
-        editCategoryBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                TextInputDialog editCategoryDialog = new TextInputDialog();
-                editCategoryDialog.setTitle("Edit Category");
-                editCategoryDialog.setContentText("Please enter a name for the category");
-                Optional<String> result = editCategoryDialog.showAndWait();
-                Category.editCategoryName(categoryList.getSelectionModel().getSelectedItem().toString(),result.get());
-                categoryList.getItems().set(categoryList.getSelectionModel().getSelectedIndex(), result.get());
-            }
+        editCategoryBtn.setOnAction((ActionEvent actionEvent) -> {
+            TextInputDialog editCategoryDialog = new TextInputDialog();
+            editCategoryDialog.setTitle("Edit Category");
+            editCategoryDialog.setContentText("Please enter a name for the category");
+            Optional<String> result = editCategoryDialog.showAndWait();
+            Category.editCategoryName(categoryList.getSelectionModel().getSelectedItem().toString(),result.get());
+            categoryList.getItems().set(categoryList.getSelectionModel().getSelectedIndex(), result.get());
         });
 
-        removeCategoryBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                Category.deleteCategory(categoryList.getSelectionModel().getSelectedItem().toString());
-                categoryList.getItems().remove(categoryList.getSelectionModel().getSelectedItem());
-             }
+        removeCategoryBtn.setOnAction((ActionEvent actionEvent) -> {
+            Category.deleteCategory(categoryList.getSelectionModel().getSelectedItem().toString());
+            categoryList.getItems().remove(categoryList.getSelectionModel().getSelectedItem());
         });
 
-        addCategoryBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                TextInputDialog categoryInputDialog = new TextInputDialog();
-                categoryInputDialog.setTitle("New Category Name");
-                categoryInputDialog.setContentText("Please enter a name for the new category");
-                Optional<String> result = categoryInputDialog.showAndWait();
-                if (!result.get().isBlank()) {
-                    Category.addCategory(result.get());
-                    categoryList.getItems().add(result.get());
-                }
+        addCategoryBtn.setOnAction((ActionEvent actionEvent) -> {
+            TextInputDialog categoryInputDialog = new TextInputDialog();
+            categoryInputDialog.setTitle("New Category Name");
+            categoryInputDialog.setContentText("Please enter a name for the new category");
+            Optional<String> result = categoryInputDialog.showAndWait();
+            if (!result.get().isBlank()) {
+                Category.addCategory(result.get());
+                categoryList.getItems().add(result.get());
             }
         });
         //Secondary (bottom left) selector. Populates from selection in categorySelectorBox
@@ -93,11 +78,11 @@ public class Main extends Application {
             displayRecipesList.getItems().clear();
             List<String> recipesFromCategoryList = Recipe.getRecipeListFromCategory(categoryList.getSelectionModel().getSelectedItem().toString());
             if (recipesFromCategoryList.isEmpty()) {
-                displayRecipesList.getItems().add(new String("No Recipes in this Category"));
+                displayRecipesList.getItems().add("No Recipes in this Category");
             } else {
-                for (String s : recipesFromCategoryList) {
+                recipesFromCategoryList.forEach((s) -> {
                     displayRecipesList.getItems().add(s);
-                }
+                });
             }
         });
         recipeSelectorBox.getChildren().addAll(displayRecipesList);
@@ -143,25 +128,22 @@ public class Main extends Application {
             ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
             rNameDialog.getDialogPane().getButtonTypes().addAll(buttonSave, buttonCancel);
             nameField.requestFocus();
-            rNameDialog.setResultConverter(new Callback<ButtonType, Recipe>() {
-                @Override
-                public Recipe call(ButtonType buttonType) {
-                    if (buttonType == buttonSave) {
-                        int cat;
-                        if (nameField.getText().equals("")) {
-                            return null;
-                        }
-                        if (categoryField.getText().equals("")) {
-                            cat = 0;
-                        } else {
-                            cat = Category.getCategoryID(categoryField.getText());
-                        }
-                        Recipe newRecipe =  new Recipe(nameField.getText(), cat, descriptionField.getText());
-                        newRecipe.saveRecipe();
-                        return newRecipe;
-                    } else {
+            rNameDialog.setResultConverter((ButtonType buttonType) -> {
+                if (buttonType == buttonSave) {
+                    int cat;
+                    if (nameField.getText().equals("")) {
                         return null;
                     }
+                    if (categoryField.getText().equals("")) {
+                        cat = 0;
+                    } else {
+                        cat = Category.getCategoryID(categoryField.getText());
+                    }
+                    Recipe newRecipe =  new Recipe(nameField.getText(), cat, descriptionField.getText());
+                    newRecipe.saveRecipe();
+                    return newRecipe;
+                } else {
+                    return null;
                 }
             });
             Optional<Recipe> addRecipe = rNameDialog.showAndWait();
@@ -180,15 +162,6 @@ public class Main extends Application {
             if (!displayRecipesList.getSelectionModel().isEmpty()) {
                 if (!displayRecipesList.getSelectionModel().getSelectedItem().toString().equals("No Recipes in this Category")) {
                     Recipe displayedRecipe = new Recipe(displayRecipesList.getSelectionModel().getSelectedItem().toString());
-                    ImageView recipeImageView = null;
-                    try {
-                        Image recipeImage = new Image(new FileInputStream("/home/vinny/IdeaProjects/RecipeOrganizer/src/software/blowtorch/image/wide_32.jpg"));
-                        recipeImageView = new ImageView(recipeImage);
-                    } catch (IOException ex) {
-                        System.err.println("Exception :" + ex.getMessage() + " in displayRecipes Event Handler");
-                    }
-                    recipeImageView.setFitWidth(400);
-                    recipeImageView.setPreserveRatio(true);
                     Label nameLabel = new Label("Name :" + displayedRecipe.getRecipeName());
                     Label descriptionLabel = new Label("Description :" + displayedRecipe.getRecipeDesc());
                     Label categoryLabel = new Label("Category :" + displayedRecipe.getRecipeCategory());
@@ -220,7 +193,6 @@ public class Main extends Application {
                     recipeTopBox.getChildren().clear();
                     nameDescriptionBox.getChildren().clear();
                     recipeBox.getChildren().clear();
-                    recipeTopBox.getChildren().add(recipeImageView);
                     nameDescriptionBox.addRow(0, nameLabel);
                     nameDescriptionBox.addRow(1, categoryLabel);
                     nameDescriptionBox.addRow(2, descriptionLabel);
@@ -234,15 +206,6 @@ public class Main extends Application {
         editRecipeButton.setOnAction((event) -> {
             Recipe displayedRecipe = new Recipe(displayRecipesList.getSelectionModel().getSelectedItem().toString());
             displayedRecipe.getRecipe();
-            ImageView recipeImageView = null;
-            try {
-                Image recipeImage = new Image(new FileInputStream("/home/vinny/IdeaProjects/RecipeOrganizer/src/software/blowtorch/image/wide_32.jpg"));
-                recipeImageView = new ImageView(recipeImage);
-            } catch (IOException ex) {
-                System.err.println("Exception :" + ex.getMessage()+" in editRecipeButton Event Handler");
-            }
-            recipeImageView.setFitWidth(400);
-            recipeImageView.setPreserveRatio(true);
             Label nameLabel = new Label("Name :");
             TextField nameField = new TextField(displayedRecipe.getRecipeName());
             Label descriptionLabel = new Label("Description :");
@@ -260,9 +223,9 @@ public class Main extends Application {
             Button addFieldTextBtn = new Button("+");
             addFieldTextBtn.setTooltip(new Tooltip("Add Ingredient Line"));
             ingredientsPane.addRow(1, new Label("Qty"), new Label("Measure"), new Label("Ingredients"), addFieldTextBtn);
-            ArrayList<TextField> quantityArrayList = new ArrayList<TextField>();
-            ArrayList<ComboBox> measureComboBox = new ArrayList<ComboBox>();
-            ArrayList<TextField> ingredientArrayList = new ArrayList<TextField>();
+            ArrayList<TextField> quantityArrayList = new ArrayList<>();
+            ArrayList<ComboBox> measureComboBox = new ArrayList<>();
+            ArrayList<TextField> ingredientArrayList = new ArrayList<>();
             ArrayList<Ingredient> ingredientsList = displayedRecipe.getIngredients();
             for (int i = 0; i < ingredientsList.size(); i++) {
                 quantityArrayList.add(new TextField(""+ingredientsList.get(i).getAmount()));
@@ -303,7 +266,7 @@ public class Main extends Application {
             directionHeaderBox.setSpacing(90);
             directionHeaderBox.setAlignment(Pos.CENTER);
             directionsPane.addRow(1, directionHeaderBox);
-            ArrayList<TextField> directionArrayList = new ArrayList<TextField>();
+            ArrayList<TextField> directionArrayList = new ArrayList<>();
             ArrayList<Directions> directionsList = displayedRecipe.getDirections();
             for (int i = 0; i < directionsList.size(); i++) {
             directionArrayList.add(new TextField(directionsList.get(i).getDirection()));
@@ -347,7 +310,6 @@ public class Main extends Application {
             nameDescriptionBox.getChildren().clear();
             recipeBox.getChildren().clear();
             bottomBox.getChildren().clear();
-            recipeTopBox.getChildren().add(recipeImageView);
             nameDescriptionBox.addRow(0, nameLabel, nameField);
             nameDescriptionBox.addRow(1, categoryLabel, categoryField);
             nameDescriptionBox.addRow(2, descriptionLabel, descriptionField);
@@ -372,20 +334,17 @@ public class Main extends Application {
         stage.sizeToScene();
         stage.show();
 
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent we) {
-                try {
-                    String database = "jdbc:derby:;shutdown=true";
-                    DriverManager.getConnection(database);
-                } catch (SQLException ex) {
-                    if (ex.getSQLState().equals("XJ015")) {
-                        System.out.println("Derby shutdown normally");
-                    } else {
-                        System.out.println("Derby didn't shutdown normally");
-                    }
-                    System.out.println("Closing...");
+        stage.setOnCloseRequest((WindowEvent we) -> {
+            try {
+                String database = "jdbc:derby:;shutdown=true";
+                DriverManager.getConnection(database);
+            } catch (SQLException ex) {
+                if (ex.getSQLState().equals("XJ015")) {
+                    System.out.println("Derby shutdown normally");
+                } else {
+                    System.out.println("Derby didn't shutdown normally");
                 }
+                System.out.println("Closing...");
             }
         });
     }

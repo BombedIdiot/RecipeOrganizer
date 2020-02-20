@@ -164,13 +164,16 @@ public class Main extends Application {
 
         // VBox that holds a GridPane containing name,category,description and an HBox
         VBox recipeBox = new VBox();
-        GridPane nameDescriptionBox = new GridPane();
-        nameDescriptionBox.setVgap(40);
-        nameDescriptionBox.setHgap(10);
         HBox recipeTopBox = new HBox();
-        recipeTopBox.setSpacing(50);
-        nameDescriptionBox.setAlignment(Pos.CENTER);
-
+        HBox bottomBox = new HBox();
+        GridPane ingredientsPane = new GridPane();
+        GridPane directionsPane = new GridPane();
+        ColumnConstraints columns = new ColumnConstraints();
+        columns.setPercentWidth(50);
+        ingredientsPane.getColumnConstraints().add(columns);
+        directionsPane.getColumnConstraints().add(columns);
+        bottomBox.getChildren().addAll(ingredientsPane, directionsPane);
+        
         //Handler when a recipe is selected from the bottom left recipe list
         displayRecipesList.setOnMouseClicked(mouseEvent -> {
             if (!displayRecipesList.getSelectionModel().isEmpty()) {
@@ -180,13 +183,6 @@ public class Main extends Application {
                     Label descriptionLabel = new Label("Description :" + displayedRecipe.getRecipeDesc());
                     Label categoryLabel = new Label("Category :" + displayedRecipe.getRecipeCategory());
                     // Another HBox and GridPane to hold the list of ingredients
-                    HBox bottomBox = new HBox();
-                    bottomBox.setSpacing(100);
-                    GridPane ingredientsPane = new GridPane();
-                    ingredientsPane.setPrefHeight(500);
-                    ingredientsPane.setHgap(10);
-                    ingredientsPane.setVgap(10);
-                    ingredientsPane.addRow(0, new Text(" "));
                     ingredientsPane.addRow(1, new Label("Qty"), new Label("Measure"), new Label("Ingredients"));
                     ArrayList<Ingredient> ingredientsList = displayedRecipe.getIngredients();
                     for (int i = 0; i < ingredientsList.size(); i++) {
@@ -194,11 +190,6 @@ public class Main extends Application {
                                 new Label(ingredientsList.get(i).getIngredient()));
                     }
                     //GridPane to hold list of directions
-                    GridPane directionsPane = new GridPane();
-                    directionsPane.setPrefHeight(500);
-                    directionsPane.setHgap(10);
-                    directionsPane.setVgap(10);
-                    directionsPane.addRow(0, new Text(" "));
                     directionsPane.addRow(1, new Label("Directions :"));
                     ArrayList<Directions> directionsList = displayedRecipe.getDirections();
                     if(directionsList != null) {
@@ -209,14 +200,7 @@ public class Main extends Application {
                     // GridPane->nameDescriptionBox into an HBox->recipeTopBox, put into a VBox->recipeBox
                     // 2 GridPanes holding instructions and recipes put into an HBox and then added to thhe VBox->recipeBox
                     // all will be added into the main SplitPane->mainWindow
-                    recipeTopBox.getChildren().clear();
-                    nameDescriptionBox.getChildren().clear();
-                    recipeBox.getChildren().clear();
-                    nameDescriptionBox.addRow(0, nameLabel);
-                    nameDescriptionBox.addRow(1, categoryLabel);
-                    nameDescriptionBox.addRow(2, descriptionLabel);
-                    recipeTopBox.getChildren().add(nameDescriptionBox);
-                    bottomBox.getChildren().addAll(ingredientsPane, directionsPane);
+                    recipeTopBox.getChildren().addAll(nameLabel, categoryLabel, descriptionLabel);
                     recipeBox.getChildren().addAll(recipeTopBox, bottomBox);
                 }
             }
@@ -234,9 +218,7 @@ public class Main extends Application {
             TextField categoryField = new TextField(displayedRecipe.getRecipeCategory());
 
             //HBox->bottomBox and GridPane->ingredientsPane created same as display
-            HBox bottomBox = new HBox();
             bottomBox.setSpacing(100);
-            GridPane ingredientsPane = new GridPane();
             ingredientsPane.setPrefHeight(500);
             ingredientsPane.setHgap(10);
             ingredientsPane.setVgap(10);
@@ -286,7 +268,6 @@ public class Main extends Application {
             });
 
             // GridPane->directionsPane
-            GridPane directionsPane = new GridPane();
             directionsPane.setPrefHeight(500);
             directionsPane.setHgap(10);
             directionsPane.setVgap(10);
@@ -351,13 +332,13 @@ public class Main extends Application {
             // VBox->recipeBox holds recipeTopBox, the newly created HBox->bottomBox and the buttonBarBox
             // that added into the rightPane for main SplitPane->mainWindow            
             recipeTopBox.getChildren().clear();
-            nameDescriptionBox.getChildren().clear();
+/*            nameDescriptionBox.getChildren().clear();
             recipeBox.getChildren().clear();
             bottomBox.getChildren().clear();
             nameDescriptionBox.addRow(0, nameLabel, nameField);
             nameDescriptionBox.addRow(1, categoryLabel, categoryField);
             nameDescriptionBox.addRow(2, descriptionLabel, descriptionField);
-            recipeTopBox.getChildren().add(nameDescriptionBox);
+            recipeTopBox.getChildren().add(nameDescriptionBox); */
             bottomBox.getChildren().addAll(ingredientsPane, directionsPane);
             HBox buttonBarBox = new HBox();
             buttonBarBox.getChildren().add(saveCancelBtnBar);

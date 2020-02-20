@@ -19,6 +19,7 @@ import java.util.Optional;
 public class Main extends Application {
 
     @Override public void start(Stage stage) {
+        // Category read from database and built into a ListView
         ListView categoryList = new ListView();
         categoryList.getItems().clear();
         List<String> listOfBooks = Category.getCategoryAll();
@@ -26,12 +27,12 @@ public class Main extends Application {
             categoryList.getItems().add("No Category");
         } else {
             categoryList.getItems().add("No Category");
-            for (String s : listOfBooks) {
+            listOfBooks.forEach((s) -> {
                 categoryList.getItems().add(s);
-            }
+            });
         }
 
-        //Toolbar
+        //Toolbar for Category manipulation Add/Edit/Delete
         ToolBar categoryTlbr = new ToolBar();
         Button addCategoryBtn = new Button("Add Category");
         addCategoryBtn.setTooltip(new Tooltip("Add Category"));
@@ -39,13 +40,14 @@ public class Main extends Application {
         removeCategoryBtn.setTooltip(new Tooltip("Remove Category"));
         Button editCategoryBtn = new Button("Edit Category");
         editCategoryBtn.setTooltip(new Tooltip("Edit Category"));
-        // Box for top left selector holding Categories
+        
+        // VBox for top left selector holding Categories
         categoryTlbr.getItems().addAll(addCategoryBtn, editCategoryBtn, removeCategoryBtn);
         VBox categorySelectorBox = new VBox();
         categorySelectorBox.setAlignment(Pos.CENTER);
         categorySelectorBox.getChildren().addAll(categoryTlbr, categoryList);
 
-
+        // Edit category dialog.
         editCategoryBtn.setOnAction((ActionEvent actionEvent) -> {
             TextInputDialog editCategoryDialog = new TextInputDialog();
             editCategoryDialog.setTitle("Edit Category");
@@ -55,11 +57,13 @@ public class Main extends Application {
             categoryList.getItems().set(categoryList.getSelectionModel().getSelectedIndex(), result.get());
         });
 
+        // Remove category handler
         removeCategoryBtn.setOnAction((ActionEvent actionEvent) -> {
             Category.deleteCategory(categoryList.getSelectionModel().getSelectedItem().toString());
             categoryList.getItems().remove(categoryList.getSelectionModel().getSelectedItem());
         });
 
+        // Add Category dialog
         addCategoryBtn.setOnAction((ActionEvent actionEvent) -> {
             TextInputDialog categoryInputDialog = new TextInputDialog();
             categoryInputDialog.setTitle("New Category Name");
@@ -70,10 +74,12 @@ public class Main extends Application {
                 categoryList.getItems().add(result.get());
             }
         });
-        //Secondary (bottom left) selector. Populates from selection in categorySelectorBox
+        
+        //VBox for bottom-left ListView holding recipes from selected category
         VBox recipeSelectorBox = new VBox();
         ListView displayRecipesList = new ListView();
 
+        // Handler for ther recipes ListView that populates the recipe pane
         categoryList.setOnMouseClicked(mouseEvent -> {
             displayRecipesList.getItems().clear();
             List<String> recipesFromCategoryList = Recipe.getRecipeListFromCategory(categoryList.getSelectionModel().getSelectedItem().toString());
@@ -87,12 +93,16 @@ public class Main extends Application {
         });
         recipeSelectorBox.getChildren().addAll(displayRecipesList);
 
-        //the left pane holding the categorized or category items
+        
+        //Create a SplitPane->leftpane holding the category and recipe ListViews
+        // Vertical SplitPane holds 2 VBoxes and will be put in the main Split Pane
         SplitPane leftPane = new SplitPane(categorySelectorBox, recipeSelectorBox);
         leftPane.setOrientation(Orientation.VERTICAL);
         leftPane.setDividerPositions(0.5);
 
+        // VBox to be put in the SplitPane->rightpane to hold a recipe
         VBox rightPane = new VBox();
+        // Toolbar for recipe manipulation Add/Edit/Remove
         ToolBar recipeTlbr = new ToolBar();
         Button addRecipeButton = new Button("+ Add Recipe");
         Button editRecipeButton = new Button("Edit Recipe");
@@ -100,11 +110,14 @@ public class Main extends Application {
         recipeTlbr.getItems().addAll(addRecipeButton, editRecipeButton, removeRecipeButton);
         rightPane.getChildren().add(recipeTlbr);
 
+        //Remove recipe handler
         removeRecipeButton.setOnAction(event -> {
             Recipe.removeRecipe(displayRecipesList.getSelectionModel().getSelectedItem().toString());
             displayRecipesList.getItems().remove(displayRecipesList.getSelectionModel().getSelectedItem());
         });
 
+        // Add recipe handler
+        //Currently shows a dialog to enter Name Category and Description
         addRecipeButton.setOnAction((event) -> {
             String category = categoryList.getSelectionModel().getSelectedItem().toString();
             Dialog<Recipe> rNameDialog = new Dialog<>();
@@ -149,7 +162,7 @@ public class Main extends Application {
             Optional<Recipe> addRecipe = rNameDialog.showAndWait();
         });
 
-        // The main information window populated from recipeSelectorBox
+        // VBox that holds a GridPane containing name,category,description and an HBox
         VBox recipeBox = new VBox();
         GridPane nameDescriptionBox = new GridPane();
         nameDescriptionBox.setVgap(40);
@@ -158,6 +171,7 @@ public class Main extends Application {
         recipeTopBox.setSpacing(50);
         nameDescriptionBox.setAlignment(Pos.CENTER);
 
+        //Handler when a recipe is selected from the bottom left recipe list
         displayRecipesList.setOnMouseClicked(mouseEvent -> {
             if (!displayRecipesList.getSelectionModel().isEmpty()) {
                 if (!displayRecipesList.getSelectionModel().getSelectedItem().toString().equals("No Recipes in this Category")) {
@@ -165,6 +179,7 @@ public class Main extends Application {
                     Label nameLabel = new Label("Name :" + displayedRecipe.getRecipeName());
                     Label descriptionLabel = new Label("Description :" + displayedRecipe.getRecipeDesc());
                     Label categoryLabel = new Label("Category :" + displayedRecipe.getRecipeCategory());
+                    // Another HBox and GridPane to hold the list of ingredients
                     HBox bottomBox = new HBox();
                     bottomBox.setSpacing(100);
                     GridPane ingredientsPane = new GridPane();
@@ -178,6 +193,7 @@ public class Main extends Application {
                         ingredientsPane.addRow(i+2, new Label(""+ingredientsList.get(i).getAmount()), new Label(ingredientsList.get(i).getMeasure()),
                                 new Label(ingredientsList.get(i).getIngredient()));
                     }
+                    //GridPane to hold list of directions
                     GridPane directionsPane = new GridPane();
                     directionsPane.setPrefHeight(500);
                     directionsPane.setHgap(10);
@@ -190,6 +206,9 @@ public class Main extends Application {
                             directionsPane.addRow(i + 2, new Label(directionsList.get(i).getDirection()));
                         }
                     }
+                    // GridPane->nameDescriptionBox into an HBox->recipeTopBox, put into a VBox->recipeBox
+                    // 2 GridPanes holding instructions and recipes put into an HBox and then added to thhe VBox->recipeBox
+                    // all will be added into the main SplitPane->mainWindow
                     recipeTopBox.getChildren().clear();
                     nameDescriptionBox.getChildren().clear();
                     recipeBox.getChildren().clear();
@@ -203,6 +222,7 @@ public class Main extends Application {
             }
         });
 
+        //Handler when a recipe is selected from the bottom left recipe list and Edit button clicked
         editRecipeButton.setOnAction((event) -> {
             Recipe displayedRecipe = new Recipe(displayRecipesList.getSelectionModel().getSelectedItem().toString());
             displayedRecipe.getRecipe();
@@ -213,6 +233,7 @@ public class Main extends Application {
             Label categoryLabel = new Label("Category :");
             TextField categoryField = new TextField(displayedRecipe.getRecipeCategory());
 
+            //HBox->bottomBox and GridPane->ingredientsPane created same as display
             HBox bottomBox = new HBox();
             bottomBox.setSpacing(100);
             GridPane ingredientsPane = new GridPane();
@@ -223,13 +244,20 @@ public class Main extends Application {
             Button addFieldTextBtn = new Button("+");
             addFieldTextBtn.setTooltip(new Tooltip("Add Ingredient Line"));
             ingredientsPane.addRow(1, new Label("Qty"), new Label("Measure"), new Label("Ingredients"), addFieldTextBtn);
+            //ArrayLists of 2 TextFields and a ComboBox to hold ingredient details
             ArrayList<TextField> quantityArrayList = new ArrayList<>();
+            //ArrayList for ComboBox holding measurement types should be populated with those stored in database
             ArrayList<ComboBox> measureComboBox = new ArrayList<>();
             ArrayList<TextField> ingredientArrayList = new ArrayList<>();
+            //ArrayList of Ingredients class populated
             ArrayList<Ingredient> ingredientsList = displayedRecipe.getIngredients();
             for (int i = 0; i < ingredientsList.size(); i++) {
                 quantityArrayList.add(new TextField(""+ingredientsList.get(i).getAmount()));
                 measureComboBox.add(new ComboBox());
+                //Measures is just 2 static methods in Ingredients class. Does not require much
+                // manipulation and 1 variable read from the database. Making it's own class likely unnecessary
+                // Do we need a remove method?
+                // Here the database values are read and put into an ArrayList of String
                 ArrayList<String> measures = Ingredient.getMeasurements();
                 for (int t=0; t<measures.size(); t++) {
                     measureComboBox.get(measureComboBox.size() - 1).getItems().add(measures.get(t));
@@ -241,6 +269,7 @@ public class Main extends Application {
                 measureComboBox.get(i).getSelectionModel().select(ingredientsList.get(i).getMeasure());
                 ingredientsPane.addRow(i+2, quantityArrayList.get(i), measureComboBox.get(i), ingredientArrayList.get(i));
             }
+            // Here we add TextFields and ComboBox for more ingredients
             addFieldTextBtn.setOnAction(mouseEvent -> {
                 quantityArrayList.add(new TextField());
                 quantityArrayList.get(quantityArrayList.size()-1).setPrefWidth(50);
@@ -256,15 +285,18 @@ public class Main extends Application {
                 ingredientsPane.addRow(nextRow+1, quantityArrayList.get(nextRow-1), measureComboBox.get(nextRow-1), ingredientArrayList.get(nextRow-1));
             });
 
+            // GridPane->directionsPane
             GridPane directionsPane = new GridPane();
             directionsPane.setPrefHeight(500);
             directionsPane.setHgap(10);
             directionsPane.setVgap(10);
             directionsPane.addRow(0, new Text(" "));
             Button addDirectionBtn = new Button("Add Direction");
+            // HBox to hold Directions title and the add line button
             HBox directionHeaderBox = new HBox(new Label("Directions"), addDirectionBtn);
             directionHeaderBox.setSpacing(90);
             directionHeaderBox.setAlignment(Pos.CENTER);
+            // add that HBox->directionHeaderBox to GridPane->directionsPane then each directions line is added
             directionsPane.addRow(1, directionHeaderBox);
             ArrayList<TextField> directionArrayList = new ArrayList<>();
             ArrayList<Directions> directionsList = displayedRecipe.getDirections();
@@ -273,6 +305,7 @@ public class Main extends Application {
             directionArrayList.get(directionArrayList.size()-1).setPrefWidth(500);
                 directionsPane.addRow(i+2, directionArrayList.get(i));
             }
+            // Handler when user needs a new Directions input
             addDirectionBtn.setOnAction(mouseEvent -> {
                 directionArrayList.add(new TextField());
                 directionArrayList.get(directionArrayList.size()-1).setPrefWidth(500);
@@ -280,6 +313,7 @@ public class Main extends Application {
                 directionsPane.addRow(nextRow+1, directionArrayList.get(nextRow-1));
             });
 
+            //Save & Cancel buttons put into a ButtonBar then added to it's own HBox
             ButtonBar saveCancelBtnBar = new ButtonBar();
             Button buttonSave = new Button("Save");
             ButtonBar.setButtonData(buttonSave, ButtonBar.ButtonData.OK_DONE);
@@ -287,7 +321,9 @@ public class Main extends Application {
             ButtonBar.setButtonData(buttonCancel, ButtonBar.ButtonData.CANCEL_CLOSE);
             saveCancelBtnBar.getButtons().addAll(buttonSave, buttonCancel);
 
+            // Handler for Save Recipe
             buttonSave.setOnAction(saveEvent -> {
+                // Retrieve user input and put into an ArrayList of Ingredients
                 ArrayList<Ingredient> ingredientList = new ArrayList<>();
                 for (int i = 0; i < ingredientArrayList.size(); i++) {
                     if (measureComboBox.get(i).getValue() != null) {
@@ -297,15 +333,23 @@ public class Main extends Application {
                         ingredientList.add(ing);
                     }
                 }
+                // set and save ingredients list
                 displayedRecipe.setIngredients(ingredientList);
                 displayedRecipe.saveRecipeIngredients();
+                // retrieve user input for directions and put into a Directions class
                 for (int i=0; i < directionArrayList.size(); i++) {
                     Directions dir = new Directions(directionArrayList.get(i).getText());
                     directionsList.add(dir);
                 }
+                // set and save Directions
                 displayedRecipe.setDirections(directionsList);
                 displayedRecipe.saveDirections();
             });
+            
+            // GridPane->nameDescriptionBox into an HBox->recipeTopBox, put into a VBox->recipeBox
+            // 2 GridPanes holding instructions and recipes put into an HBox and then added to the HBox->bottomBox
+            // VBox->recipeBox holds recipeTopBox, the newly created HBox->bottomBox and the buttonBarBox
+            // that added into the rightPane for main SplitPane->mainWindow            
             recipeTopBox.getChildren().clear();
             nameDescriptionBox.getChildren().clear();
             recipeBox.getChildren().clear();

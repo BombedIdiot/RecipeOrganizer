@@ -171,10 +171,12 @@ public class Main extends Application {
             Optional<Recipe> addRecipe = rNameDialog.showAndWait();
         });
 
-        // HBox->recipeTopBox holds Name/Category/Description
-        HBox recipeTopBox = new HBox();
-        recipeTopBox.setSpacing(50);
-        recipeTopBox.setPadding(new Insets(20));
+        // HBox->viewRecipeHead holds Name/Category/Description on View
+        // FlowPane->editRecipeHead holds Name/Category/Description on Edit
+        // This is because the we have 3 fields to display on view, 6 to display on edit
+        FlowPane recipeHead = new FlowPane();
+        recipeHead.setPadding(new Insets(10));
+        recipeHead.setHgap(20);
         // 2 GridPanes for holding ingredients and directions
         GridPane ingredientsPane = new GridPane();
         GridPane directionsPane = new GridPane();
@@ -191,6 +193,10 @@ public class Main extends Application {
         
         //Handler when a recipe is selected from the bottom left recipe list
         displayRecipesList.setOnMouseClicked(mouseEvent -> {
+            recipeHead.getChildren().clear();
+            ingredientsPane.getChildren().clear();
+            directionsPane.getChildren().clear();
+
             if (!displayRecipesList.getSelectionModel().isEmpty()) {
                 if (!displayRecipesList.getSelectionModel().getSelectedItem().toString().equals("No Recipes in this Category")) {
                     Recipe displayedRecipe = new Recipe(displayRecipesList.getSelectionModel().getSelectedItem().toString());
@@ -210,8 +216,8 @@ public class Main extends Application {
                             directionsPane.addRow(i + 2, new Label(directionsList.get(i).getDirection()));
                         }
                     }
-                    recipeTopBox.getChildren().addAll(nameLabel, categoryLabel, descriptionLabel);
-                    recipeBox.setTop(recipeTopBox);
+                    recipeHead.getChildren().addAll(nameLabel, categoryLabel, descriptionLabel);
+                    recipeBox.setTop(recipeHead);
                     recipeBox.setLeft(ingredientsPane);
                     recipeBox.setCenter(directionsPane);
                 }
@@ -220,6 +226,9 @@ public class Main extends Application {
 
         //Handler when a recipe is selected from the bottom left recipe list and Edit button clicked
         editRecipeButton.setOnAction((event) -> {
+            recipeHead.getChildren().clear();
+            ingredientsPane.getChildren().clear();
+            directionsPane.getChildren().clear();
             Recipe displayedRecipe = new Recipe(displayRecipesList.getSelectionModel().getSelectedItem().toString());
             displayedRecipe.getRecipe();
             Label nameLabel = new Label("Name :");
@@ -229,26 +238,20 @@ public class Main extends Application {
             Label categoryLabel = new Label("Category :");
             TextField categoryField = new TextField(displayedRecipe.getRecipeCategory());
 
-            //HBox->bottomBox and GridPane->ingredientsPane created same as display
-//            bottomBox.setSpacing(100);
-            ingredientsPane.setPrefHeight(500);
-            ingredientsPane.setHgap(10);
-            ingredientsPane.setVgap(10);
-            ingredientsPane.addRow(0, new Text(" "));
             Button addFieldTextBtn = new Button("+");
             addFieldTextBtn.setTooltip(new Tooltip("Add Ingredient Line"));
             ingredientsPane.addRow(1, new Label("Qty"), new Label("Measure"), new Label("Ingredients"), addFieldTextBtn);
-            //ArrayLists of 2 TextFields and a ComboBox to hold ingredient details
+            // ArrayLists of 2 TextFields and a ComboBox to hold ingredient details
             ArrayList<TextField> quantityArrayList = new ArrayList<>();
-            //ArrayList for ComboBox holding measurement types should be populated with those stored in database
+            // ArrayList for ComboBox holding measurement types should be populated with those stored in database
             ArrayList<ComboBox> measureComboBox = new ArrayList<>();
             ArrayList<TextField> ingredientArrayList = new ArrayList<>();
-            //ArrayList of Ingredients class populated
+            // ArrayList of Ingredients class populated
             ArrayList<Ingredient> ingredientsList = displayedRecipe.getIngredients();
             for (int i = 0; i < ingredientsList.size(); i++) {
                 quantityArrayList.add(new TextField(""+ingredientsList.get(i).getAmount()));
                 measureComboBox.add(new ComboBox());
-                //Measures is just 2 static methods in Ingredients class. Does not require much
+                // Measures is just 2 static methods in Ingredients class. Does not require much
                 // manipulation and 1 variable read from the database. Making it's own class likely unnecessary
                 // Do we need a remove method?
                 // Here the database values are read and put into an ArrayList of String
@@ -280,14 +283,13 @@ public class Main extends Application {
             });
 
             // GridPane->directionsPane
-            directionsPane.setHgap(10);
-            directionsPane.setVgap(10);
-            directionsPane.addRow(0, new Text(" "));
             Button addDirectionBtn = new Button("Add Direction");
             // HBox to hold Directions title and the add line button
-            HBox directionHeaderBox = new HBox(new Label("Directions"), addDirectionBtn);
-            directionHeaderBox.setSpacing(90);
-            directionHeaderBox.setAlignment(Pos.CENTER);
+            AnchorPane directionHeaderBox = new AnchorPane();
+            Label newDirectLabel = new Label("Directions");
+            AnchorPane.setLeftAnchor(newDirectLabel, 0d);
+            AnchorPane.setRightAnchor(addDirectionBtn, 0d);
+            directionHeaderBox.getChildren().addAll(newDirectLabel, addDirectionBtn);
             // add that HBox->directionHeaderBox to GridPane->directionsPane then each directions line is added
             directionsPane.addRow(1, directionHeaderBox);
             ArrayList<TextField> directionArrayList = new ArrayList<>();
@@ -295,7 +297,7 @@ public class Main extends Application {
             for (int i = 0; i < directionsList.size(); i++) {
             directionArrayList.add(new TextField(directionsList.get(i).getDirection()));
             directionArrayList.get(directionArrayList.size()-1).setPrefWidth(500);
-                directionsPane.addRow(i+2, directionArrayList.get(i));
+            directionsPane.addRow(i+2, directionArrayList.get(i));
             }
             // Handler when user needs a new Directions input
             addDirectionBtn.setOnAction(mouseEvent -> {
@@ -342,19 +344,11 @@ public class Main extends Application {
             // 2 GridPanes holding instructions and recipes put into an HBox and then added to the HBox->bottomBox
             // VBox->recipeBox holds recipeTopBox, the newly created HBox->bottomBox and the buttonBarBox
             // that added into the rightPane for main SplitPane->mainWindow            
-            recipeTopBox.getChildren().clear();
-/*            nameDescriptionBox.getChildren().clear();
-            recipeBox.getChildren().clear();
-            bottomBox.getChildren().clear();
-            nameDescriptionBox.addRow(0, nameLabel, nameField);
-            nameDescriptionBox.addRow(1, categoryLabel, categoryField);
-            nameDescriptionBox.addRow(2, descriptionLabel, descriptionField);
-            recipeTopBox.getChildren().add(nameDescriptionBox); */
-//            bottomBox.getChildren().addAll(ingredientsPane, directionsPane);
-            HBox buttonBarBox = new HBox();
-            buttonBarBox.getChildren().add(saveCancelBtnBar);
-            buttonBarBox.setAlignment(Pos.BOTTOM_CENTER);
- //           recipeBox.getChildren().addAll(recipeTopBox, bottomBox, buttonBarBox);
+            recipeHead.getChildren().addAll(nameLabel, nameField, categoryLabel, categoryField, descriptionLabel, descriptionField);
+            recipeBox.setTop(recipeHead);
+            recipeBox.setLeft(ingredientsPane);
+            recipeBox.setCenter(directionsPane);
+            recipeBox.setBottom(saveCancelBtnBar);
         });
 
         rightPane.getChildren().add(recipeBox);

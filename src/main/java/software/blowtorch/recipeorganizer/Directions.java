@@ -34,7 +34,7 @@ public class Directions {
         try {
             conn = DBHelper.connectDB();
             String sql = "SELECT " + DIRECTION_NAME + " FROM " + DIRECTIONS_TABLE + "," + DIRECTIONS_RECIPE_TABLE +
-                    " WHERE " + DIRECTION_ID + "=" + DIRECTIONS_RECIPE_ID + " AND " + RECIPE_FK_DIRECTION + "=?";
+                    " WHERE " + DIRECTION_ID + "=" + DIRECTIONS_FK + " AND " + RECIPE_FK_DIRECTION + "=?";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, id);
             rs = stmt.executeQuery();

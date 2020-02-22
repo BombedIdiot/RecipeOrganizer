@@ -2,8 +2,9 @@ ROADMAP TO 1.0
 
 * 0.1 - basic funcionality - complete
 0.2 - Visual overhaul to provide attractive interface
-0.3 - adding images field in a recipe
-0.4 - adding image as a recipe, image manipulation to make readable, overrides all fields
+0.3 - Way that we create and save the recipe is wrong, ugly and pathetic.  Fix this
+0.4 - adding images field in a recipe
+0.5 - adding image as a recipe, image manipulation to make readable, overrides all fields
 0.9 - Cookbook funcionality
 1.0 - bugfixing after testing 0.9
 

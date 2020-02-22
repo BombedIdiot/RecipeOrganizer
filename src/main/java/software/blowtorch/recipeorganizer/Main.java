@@ -1,10 +1,8 @@
 package software.blowtorch.recipeorganizer;
 
-import javafx.scene.text.Text;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -230,7 +228,6 @@ public class Main extends Application {
             ingredientsPane.getChildren().clear();
             directionsPane.getChildren().clear();
             Recipe displayedRecipe = new Recipe(displayRecipesList.getSelectionModel().getSelectedItem().toString());
-            displayedRecipe.getRecipe();
             Label nameLabel = new Label("Name :");
             TextField nameField = new TextField(displayedRecipe.getRecipeName());
             Label descriptionLabel = new Label("Description :");
@@ -241,16 +238,20 @@ public class Main extends Application {
             Button addFieldTextBtn = new Button("+");
             addFieldTextBtn.setTooltip(new Tooltip("Add Ingredient Line"));
             ingredientsPane.addRow(1, new Label("Qty"), new Label("Measure"), new Label("Ingredients"), addFieldTextBtn);
-            // ArrayLists of 2 TextFields and a ComboBox to hold ingredient details
+            // ArrayLists of 2 TextFields and a ComboBox to hold ingredient details and a delete button
             ArrayList<TextField> quantityArrayList = new ArrayList<>();
             // ArrayList for ComboBox holding measurement types should be populated with those stored in database
             ArrayList<ComboBox> measureComboBox = new ArrayList<>();
             ArrayList<TextField> ingredientArrayList = new ArrayList<>();
+            ArrayList<Button> deleteIngredientBtn = new ArrayList<>();
             // ArrayList of Ingredients class populated
             ArrayList<Ingredient> ingredientsList = displayedRecipe.getIngredients();
             for (int i = 0; i < ingredientsList.size(); i++) {
                 quantityArrayList.add(new TextField(""+ingredientsList.get(i).getAmount()));
+                quantityArrayList.get(quantityArrayList.size()-1).setPrefWidth(50);
                 measureComboBox.add(new ComboBox());
+                measureComboBox.get(measureComboBox.size()-1).setPrefWidth(90);
+                measureComboBox.get(measureComboBox.size()-1).setEditable(true);
                 // Measures is just 2 static methods in Ingredients class. Does not require much
                 // manipulation and 1 variable read from the database. Making it's own class likely unnecessary
                 // Do we need a remove method?
@@ -259,24 +260,27 @@ public class Main extends Application {
                 for (int t=0; t<measures.size(); t++) {
                     measureComboBox.get(measureComboBox.size() - 1).getItems().add(measures.get(t));
                 }
-                measureComboBox.get(measureComboBox.size()-1).setPrefWidth(90);
-                measureComboBox.get(measureComboBox.size()-1).setEditable(true);
-                quantityArrayList.get(quantityArrayList.size()-1).setPrefWidth(50);
-                ingredientArrayList.add(new TextField(ingredientsList.get(i).getIngredient()));
                 measureComboBox.get(i).getSelectionModel().select(ingredientsList.get(i).getMeasure());
-                ingredientsPane.addRow(i+2, quantityArrayList.get(i), measureComboBox.get(i), ingredientArrayList.get(i));
+                ingredientArrayList.add(new TextField(ingredientsList.get(i).getIngredient()));
+                deleteIngredientBtn.add(new Button("-"));
+                deleteIngredientBtn.get(i).setTooltip(new Tooltip("Remove Ingredient"));
+                ingredientsPane.addRow(i+2, quantityArrayList.get(i), measureComboBox.get(i), ingredientArrayList.get(i), deleteIngredientBtn.get(i));
+                deleteIngredientBtn.get(i).setOnAction(deleteEvent -> {
+                    int z = deleteIngredientBtn.indexOf(deleteEvent.getSource());
+                    displayedRecipe.removeIngredient(ingredientsList.get(z));
+                });
             }
             // Here we add TextFields and ComboBox for more ingredients
             addFieldTextBtn.setOnAction(mouseEvent -> {
                 quantityArrayList.add(new TextField());
                 quantityArrayList.get(quantityArrayList.size()-1).setPrefWidth(50);
                 measureComboBox.add(new ComboBox());
-                ArrayList<String> measures = Ingredient.getMeasurements();
+                measureComboBox.get(measureComboBox.size()-1).setPrefWidth(90);
+                measureComboBox.get(measureComboBox.size()-1).setEditable(true);
+                 ArrayList<String> measures = Ingredient.getMeasurements();
                 for (int t=0; t<measures.size(); t++) {
                     measureComboBox.get(measureComboBox.size() - 1).getItems().add(measures.get(t));
                 }
-                measureComboBox.get(measureComboBox.size()-1).setPrefWidth(90);
-                measureComboBox.get(measureComboBox.size()-1).setEditable(true);
                 ingredientArrayList.add(new TextField());
                 int nextRow = quantityArrayList.size();
                 ingredientsPane.addRow(nextRow+1, quantityArrayList.get(nextRow-1), measureComboBox.get(nextRow-1), ingredientArrayList.get(nextRow-1));
@@ -284,20 +288,28 @@ public class Main extends Application {
 
             // GridPane->directionsPane
             Button addDirectionBtn = new Button("Add Direction");
-            // HBox to hold Directions title and the add line button
+            // Anchor Pane to hold Directions title and the add line button
             AnchorPane directionHeaderBox = new AnchorPane();
             Label newDirectLabel = new Label("Directions");
             AnchorPane.setLeftAnchor(newDirectLabel, 0d);
             AnchorPane.setRightAnchor(addDirectionBtn, 0d);
             directionHeaderBox.getChildren().addAll(newDirectLabel, addDirectionBtn);
-            // add that HBox->directionHeaderBox to GridPane->directionsPane then each directions line is added
+            // add that AnchorPane->directionHeaderBox to GridPane->directionsPane then each directions line is added
             directionsPane.addRow(1, directionHeaderBox);
             ArrayList<TextField> directionArrayList = new ArrayList<>();
             ArrayList<Directions> directionsList = displayedRecipe.getDirections();
+            ArrayList<Button> deleteDirectionsBtn = new ArrayList<>();
             for (int i = 0; i < directionsList.size(); i++) {
-            directionArrayList.add(new TextField(directionsList.get(i).getDirection()));
-            directionArrayList.get(directionArrayList.size()-1).setPrefWidth(500);
-            directionsPane.addRow(i+2, directionArrayList.get(i));
+                directionArrayList.add(new TextField(directionsList.get(i).getDirection()));
+                directionArrayList.get(directionArrayList.size()-1).setPrefWidth(500);
+                deleteDirectionsBtn.add(new Button("-"));
+                deleteDirectionsBtn.get(i).setTooltip(new Tooltip("Remove Direction"));
+                directionsPane.addRow(i+2, directionArrayList.get(i), deleteDirectionsBtn.get(i));
+                
+                deleteDirectionsBtn.get(i).setOnAction(deleteEvent -> {
+                    int z = deleteDirectionsBtn.indexOf(deleteEvent.getSource());
+                    displayedRecipe.removeDirection(directionsList.get(z));
+                });
             }
             // Handler when user needs a new Directions input
             addDirectionBtn.setOnAction(mouseEvent -> {
@@ -307,6 +319,7 @@ public class Main extends Application {
                 directionsPane.addRow(nextRow+1, directionArrayList.get(nextRow-1));
             });
 
+            
             //Save & Cancel buttons put into a ButtonBar then added to it's own HBox
             ButtonBar saveCancelBtnBar = new ButtonBar();
             Button buttonSave = new Button("Save");
@@ -318,25 +331,26 @@ public class Main extends Application {
             // Handler for Save Recipe
             buttonSave.setOnAction(saveEvent -> {
                 // Retrieve user input and put into an ArrayList of Ingredients
-                ArrayList<Ingredient> ingredientList = new ArrayList<>();
+                ArrayList<Ingredient> newIngredientList = new ArrayList<>();
                 for (int i = 0; i < ingredientArrayList.size(); i++) {
                     if (measureComboBox.get(i).getValue() != null) {
                         Ingredient ing = new Ingredient(ingredientArrayList.get(i).getText());
                         ing.setMeasure(measureComboBox.get(i).getValue().toString());
                         ing.setAmount(Float.parseFloat(quantityArrayList.get(i).getText()));
-                        ingredientList.add(ing);
+                        newIngredientList.add(ing);
                     }
                 }
                 // set and save ingredients list
-                displayedRecipe.setIngredients(ingredientList);
+                displayedRecipe.setIngredients(newIngredientList);
                 displayedRecipe.saveRecipeIngredients();
                 // retrieve user input for directions and put into a Directions class
+                ArrayList<Directions> newDirectionsList = new ArrayList<>();
                 for (int i=0; i < directionArrayList.size(); i++) {
                     Directions dir = new Directions(directionArrayList.get(i).getText());
-                    directionsList.add(dir);
+                    newDirectionsList.add(dir);
                 }
                 // set and save Directions
-                displayedRecipe.setDirections(directionsList);
+                displayedRecipe.setDirections(newDirectionsList);
                 displayedRecipe.saveDirections();
             });
             

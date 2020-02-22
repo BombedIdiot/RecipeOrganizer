@@ -1,7 +1,6 @@
 package software.blowtorch.recipeorganizer;
 
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,22 +26,16 @@ public class Ingredient {
         }
     }
 
-    protected int getIngredientID() {
-        return this.ingredientID;
-    }
-    protected String getIngredient() {
-        return this.ingredient;
-    }
+    // Getters
+    protected int getIngredientID() { return this.ingredientID; }
+    protected String getIngredient() { return this.ingredient; }
     protected float getAmount() { return this.amount; }
     protected String getMeasure() { return this.measure; }
 
-    protected void setIngredientID(int id) {
-        this.ingredientID = id;
-    }
+    // Setters
+    protected void setIngredientID(int id) { this.ingredientID = id; }
     protected void setIngredient(String i) { this.ingredient = i; }
-    protected void setAmount(float amount) {
-        this.amount = amount;
-    }
+    protected void setAmount(float amount) { this.amount = amount; }
     protected void setMeasure(String m) {
         newMeasurement(m);
         this.measure = m;

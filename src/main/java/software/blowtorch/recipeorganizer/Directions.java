@@ -11,6 +11,7 @@ import static software.blowtorch.recipeorganizer.DBHelper.*;
 
 public class Directions {
     private int directionID;
+    private int directionDatabaseID;
     private String direction;
 
     protected Directions(String direction) {
@@ -22,9 +23,11 @@ public class Directions {
     }
 
     protected int getDirectionID() { return this.directionID; }
+    protected int getDirectionDatabaseID() { return this.directionDatabaseID; }
     protected String getDirection() { return this.direction; }
 
     protected void setDirection(String d) { this.direction = d; }
+    protected void setDirectionDatabaseID(int sdd) { this.directionDatabaseID = sdd; }
 
     protected static ArrayList<Directions> getDirectionsByRecipeID(int id) {
         Connection conn = null;
@@ -33,7 +36,7 @@ public class Directions {
         ArrayList<Directions> dir = new ArrayList<>();
         try {
             conn = DBHelper.connectDB();
-            String sql = "SELECT " + DIRECTION_NAME + " FROM " + DIRECTIONS_TABLE + "," + DIRECTIONS_RECIPE_TABLE +
+            String sql = "SELECT " + DIRECTION_NAME + ", "+DIRECTIONS_RECIPE_ID+ " FROM " + DIRECTIONS_TABLE + "," + DIRECTIONS_RECIPE_TABLE +
                     " WHERE " + DIRECTION_ID + "=" + DIRECTIONS_FK + " AND " + RECIPE_FK_DIRECTION + "=?";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, id);
@@ -41,6 +44,7 @@ public class Directions {
             if (rs.next() != false) {
                 do {
                     Directions d = new Directions(rs.getString(DIRECTION_NAME));
+                    d.setDirectionDatabaseID(rs.getInt(DIRECTIONS_RECIPE_ID));
                     dir.add(d);
                 } while (rs.next());
                 return dir;

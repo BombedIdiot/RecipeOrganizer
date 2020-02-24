@@ -66,13 +66,11 @@ public class Recipe {
 
 
     protected void removeDirection(Directions d) {
-       try (Connection conn = DBHelper.connectDB(); 
-            PreparedStatement stmt = conn.prepareStatement("DELETE FROM "+DIRECTIONS_RECIPE_TABLE+" WHERE "+DIRECTIONS_FK+" = ? AND "+RECIPE_FK_DIRECTION+" = ?")) {
-            stmt.setInt(2, this.getRecipeID());
-            stmt.setInt(1, d.getDirectionID());
+       try (Connection conn = DBHelper.connectDB();
+            PreparedStatement stmt = conn.prepareStatement("DELETE FROM "+DIRECTIONS_RECIPE_TABLE+" WHERE "+DIRECTIONS_RECIPE_ID+" = ?")) {
+            stmt.setInt(1, d.getDirectionDatabaseID());
             stmt.execute();
             this.directions.remove(d);
-            System.out.println("Deleted "+d.getDirection()+" From Recipe "+this.getRecipeName());
         } catch (SQLException ex) {
             System.err.println("Error :" + ex.getMessage()+" in removeDirection");
         } 
@@ -110,26 +108,21 @@ public class Recipe {
 
     protected void saveDirections() {
         deleteDirectionsFromRecipe(this.name);
-        Connection conn = null;
-        PreparedStatement stmt = null;
         String sql = "INSERT INTO "+DIRECTIONS_RECIPE_TABLE+" ("+DIRECTIONS_FK+","+ RECIPE_FK_DIRECTION +") VALUES (?, ?)";
-        try {
-            conn = DBHelper.connectDB();
-            stmt = conn.prepareStatement(sql);
+        try (Connection conn = DBHelper.connectDB();
+               PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);) {
             for (int x = 0; x<this.directions.size(); x++) {
                 stmt.setInt(1, this.directions.get(x).getDirectionID());
                 stmt.setInt(2, this.getRecipeID());
                 stmt.executeUpdate();
+                try (ResultSet rs = stmt.getGeneratedKeys();) {
+                    if (rs.next()) {
+                        this.directions.get(x).setDirectionDatabaseID(rs.getInt(1));
+                    }
+                }
             }
         } catch (SQLException ex) {
             System.err.println("Error :" + ex.getMessage()+" in saveRecipeIngredients");
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-                if (conn != null) conn.close();
-            } catch (SQLException ex) {
-                System.err.println("Error :" + ex.getMessage()+" in saveRecipeIngredients");
-            }
         }
     }
 

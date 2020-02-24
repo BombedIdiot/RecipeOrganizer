@@ -16,9 +16,12 @@ public class Directions {
 
     protected Directions(String direction) {
         this.direction = direction;
+        System.out.println("Going in to check "+direction);
         this.directionID = DBHelper.doesXExist(DIRECTIONS_TABLE, DIRECTION_ID, DIRECTION_NAME, direction);
+        System.out.println("Checking "+this.directionID);
         if (this.directionID == 0) {
             this.directionID = DBHelper.writeOneValueToDB(DIRECTIONS_TABLE, DIRECTION_NAME, direction);
+            System.out.println("Set new direction "+this.directionID);
         }
     }
 
@@ -28,6 +31,7 @@ public class Directions {
 
     protected void setDirection(String d) { this.direction = d; }
     protected void setDirectionDatabaseID(int sdd) { this.directionDatabaseID = sdd; }
+
 
     protected static ArrayList<Directions> getDirectionsByRecipeID(int id) {
         Connection conn = null;

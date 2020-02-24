@@ -63,6 +63,7 @@ public class Recipe {
     // Setters
     protected void setIngredients(ArrayList<Ingredient> i)  { this.ingredients = i; }
     protected void setDirections(ArrayList<Directions> d)   { this.directions = d; }
+    protected void addDirections(Directions d)   { this.directions.add(d); }
 
 
     protected void removeDirection(Directions d) {

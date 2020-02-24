@@ -295,29 +295,20 @@ public class Main extends Application {
             AnchorPane.setLeftAnchor(newDirectLabel, 0d);
             AnchorPane.setRightAnchor(addDirectionBtn, 0d);
             directionHeaderBox.getChildren().addAll(newDirectLabel, addDirectionBtn);
+            directionsPane.addRow(1, directionHeaderBox);
             // add that AnchorPane->directionHeaderBox to GridPane->directionsPane then each directions line is added
-            ArrayList<TextField> directionArrayList = new ArrayList<>();
-            ArrayList<Directions> directionsList = displayedRecipe.getDirections();
-            ArrayList<Button> deleteDirectionsBtn = new ArrayList<>();
-            createDirectionList(directionArrayList, directionsList, deleteDirectionsBtn, directionsPane, directionHeaderBox);
-
-            for (int i = 0; i < deleteDirectionsBtn.size(); i++) {
-                deleteDirectionsBtn.get(i).setOnAction(deleteEvent -> {
-                    int z = deleteDirectionsBtn.indexOf(deleteEvent.getSource());
-                    directionArrayList.clear();
-                    deleteDirectionsBtn.clear();
-                    displayedRecipe.removeDirection(directionsList.get(z));
-                    directionsPane.getChildren().clear();
-                    createDirectionList(directionArrayList, directionsList, deleteDirectionsBtn, directionsPane, directionHeaderBox);
-                });
+            DirectionList directionList = new DirectionList(displayedRecipe.getDirections(), directionsPane, displayedRecipe);
+            for (int x=0; x<directionList.getTextField().size(); x++) {
+                directionsPane.addRow(x+2, directionList.getInsertButton().get(x), directionList.getTextField().get(x), directionList.getDeleteButton().get(x));
             }
+
             // Handler when user needs a new Directions input
-            addDirectionBtn.setOnAction(mouseEvent -> {
+/*            addDirectionBtn.setOnAction(mouseEvent -> {
                 directionArrayList.add(new TextField());
                 directionArrayList.get(directionArrayList.size()-1).setPrefWidth(500);
                 int nextRow = directionArrayList.size();
                 directionsPane.addRow(nextRow+1, directionArrayList.get(nextRow-1));
-            });
+            }); */
 
             //Save & Cancel buttons put into a ButtonBar then added to it's own HBox
             ButtonBar saveCancelBtnBar = new ButtonBar();
@@ -343,13 +334,9 @@ public class Main extends Application {
                 displayedRecipe.setIngredients(newIngredientList);
                 displayedRecipe.saveRecipeIngredients();
                 // retrieve user input for directions and put into a Directions class
-                ArrayList<Directions> newDirectionsList = new ArrayList<>();
-                for (int i=0; i < directionArrayList.size(); i++) {
-                    Directions dir = new Directions(directionArrayList.get(i).getText());
-                    newDirectionsList.add(dir);
-                }
+                
                 // set and save Directions
-                displayedRecipe.setDirections(newDirectionsList);
+                displayedRecipe.setDirections(directionList.getDirections());
                 displayedRecipe.saveDirections();
             });
             
@@ -398,16 +385,5 @@ public class Main extends Application {
     public static void main(String[] args) {
         DBHelper.createDatabaseTables();
         Application.launch(args);
-    }
-    
-    private static void createDirectionList(ArrayList<TextField> tf, ArrayList<Directions> dir, ArrayList<Button> btn, GridPane pane, AnchorPane ap) {
-    pane.addRow(1, ap);
-    for (int i = 0; i < dir.size(); i++) {
-                tf.add(new TextField(dir.get(i).getDirection()));
-                tf.get(tf.size()-1).setPrefWidth(500);
-                btn.add(new Button("-"));
-                btn.get(i).setTooltip(new Tooltip("Remove Direction"));
-                pane.addRow(i+2, tf.get(i), btn.get(i));
-            }
     }
 }

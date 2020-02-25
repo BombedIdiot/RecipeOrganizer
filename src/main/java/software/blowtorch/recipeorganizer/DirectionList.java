@@ -17,12 +17,10 @@
 package software.blowtorch.recipeorganizer;
 
 import java.util.ArrayList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 
 /**
@@ -30,47 +28,77 @@ import javafx.scene.layout.GridPane;
  * @author vinny
  */
 public class DirectionList {
-    private final Recipe recipe;
-    private final GridPane directionsDisplay;
-    private final ArrayList<TextField> tf = new ArrayList<>();
+    private final Recipe                recipe;
+    private final GridPane              directionsDisplay;
+    private final ArrayList<TextField>  tf = new ArrayList<>();
     private final ArrayList<Directions> direction;
-    private final ArrayList<Button> insertButton = new ArrayList<>();
-    private final ArrayList<Button> deleteButton = new ArrayList<>();
-    private ArrayList<Button> moveUpButton;
-    private ArrayList<Button> moveDownButton;
-    private static final int DELETE = 1;
-    private static final int INSERT = 2;
+    private final ArrayList<Button>     insertButton = new ArrayList<>();
+    private final ArrayList<Button>     deleteButton = new ArrayList<>();
+    private final ArrayList<Button>     moveUpButton = new ArrayList<>();
+    private final ArrayList<Button>     moveDownButton = new ArrayList<>();
+    private static final int            DELETE = 0;
+    private static final int            INSERT_BEFORE = 1;
+    private static final int            INSERT_AFTER = 2;
     
-    protected DirectionList(ArrayList<Directions> d, GridPane pane, Recipe rec) {
+    protected DirectionList(GridPane pane, Recipe rec) {
         this.recipe = rec;
         this.directionsDisplay = pane;
-        this.direction = d;
-        for (int c=0; c < d.size(); c++) {
+        this.direction = rec.getDirections();
+        for (int c = 0; c < this.direction.size(); c++) {
             TextField newField = new TextField();
-            newField.setText(d.get(c).getDirection());
+            newField.setText(this.direction.get(c).getDirection());
             newField.setPrefWidth(300);
             tf.add(newField);
-            Button newDeleteButton  = new Button("-");
-            newDeleteButton.setTooltip(new Tooltip("Remove"));
-            newDeleteButton.setOnAction(directionHandler(DELETE, c));
-            deleteButton.add(newDeleteButton);
-            Button newInsertButton = new Button("+");
-            newInsertButton.setTooltip(new Tooltip("Insert"));
-            newInsertButton.setOnAction(directionHandler(INSERT, c));
-            insertButton.add(newInsertButton);
        }
-        TextField defaultField = new TextField();
-        defaultField.setPrefWidth(300);
-        tf.add(defaultField);
-        Button defaultDeleteButton = new Button("-");
-        defaultDeleteButton.setTooltip(new Tooltip("Delete"));
-        defaultDeleteButton.setOnAction(directionHandler(DELETE, deleteButton.size()));
-        deleteButton.add(defaultDeleteButton);
-        Button defaultInsertButton = new Button("+");
-        defaultInsertButton.setTooltip(new Tooltip("Insert"));
-        defaultInsertButton.setOnAction(directionHandler(INSERT, insertButton.size()));
-        insertButton.add(defaultInsertButton);
     }
+    
+    protected FlowPane getDirectionsHeader() {
+        FlowPane directionHeaderBox = new FlowPane();
+        ComboBox actionBox = new ComboBox();
+        actionBox.getItems().add("DELETE");
+        actionBox.getItems().add("INSERT before");
+        actionBox.getItems().add("INSERT after");
+        ComboBox valueBox = new ComboBox();
+        for (int d = 0; d < this.direction.size(); d++) {
+            valueBox.getItems().add(this.direction.get(d).getDirection());
+        }
+        Button submitButton = new Button("OK");
+        directionHeaderBox.getChildren().addAll(actionBox, valueBox, submitButton);
+        submitButton.setOnAction(event -> {
+            switch (actionBox.getSelectionModel().getSelectedIndex()) {
+                case DELETE:
+                    directionsDisplay.getChildren().remove(tf.get(valueBox.getSelectionModel().getSelectedIndex()));
+                    recipe.removeDirection(direction.get(valueBox.getSelectionModel().getSelectedIndex()));
+                    tf.remove(tf.get(valueBox.getSelectionModel().getSelectedIndex()));
+                    break;
+                case INSERT_BEFORE:
+                    int beforeIndex = valueBox.getSelectionModel().getSelectedIndex();
+                    tf.add(beforeIndex, new TextField());
+                    valueBox.getItems().add(beforeIndex, tf.get(beforeIndex).getText());
+                    directionsDisplay.getChildren().clear();
+                    directionsDisplay.addRow(0, directionHeaderBox);
+                   for (int x = 0; x < tf.size(); x++) {
+                        directionsDisplay.addRow(x+2, tf.get(x));
+                    }
+                    break;
+                case INSERT_AFTER:
+                    int afterIndex = valueBox.getSelectionModel().getSelectedIndex() + 1;
+                    tf.add(afterIndex, new TextField());
+                     valueBox.getItems().add(afterIndex, tf.get(afterIndex).getText());
+                    directionsDisplay.getChildren().clear();
+                    directionsDisplay.addRow(0, directionHeaderBox);
+                   for (int x = 0; x < tf.size(); x++) {
+                        directionsDisplay.addRow(x+2, tf.get(x));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        });
+                
+        return directionHeaderBox;
+    }
+    
     
     protected ArrayList<Directions> getDirections() {
         int numTextFields = this.tf.size();
@@ -92,27 +120,5 @@ public class DirectionList {
     }
     protected ArrayList<TextField> getTextField() { return this.tf; }
     protected ArrayList<Button> getInsertButton() { return this.insertButton; }
-    protected ArrayList<Button> getDeleteButton() { return this.deleteButton; }
-    
-    
-    private EventHandler<ActionEvent> directionHandler(int action, int index) {
-        if (action == DELETE) {
-            return event -> deleteDirection(index);
-        } else if (action == INSERT) {
-            return event ->insertDirection(index);
-        }
-        return null;
-    }
-    private void deleteDirection(int index) {
-        directionsDisplay.getChildren().removeAll(tf.get(index), insertButton.get(index), deleteButton.get(index));
-        recipe.removeDirection(direction.get(index));
-        tf.remove(tf.get(index));
-        insertButton.remove(insertButton.get(index));
-        deleteButton.remove(deleteButton.get(index));
-    }
-    
-    private void insertDirection(int index) {
-        tf.add(index, new TextField());
-        directionsDisplay.addRow(index+2, tf.get(index));
-   }
+    protected ArrayList<Button> getDeleteButton() { return this.deleteButton; }    
 }

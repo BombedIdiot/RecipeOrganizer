@@ -288,18 +288,14 @@ public class Main extends Application {
 
 
             // GridPane->directionsPane
-            Button addDirectionBtn = new Button("Add Direction");
             // Anchor Pane to hold Directions title and the add line button
-            AnchorPane directionHeaderBox = new AnchorPane();
-            Label newDirectLabel = new Label("Directions");
-            AnchorPane.setLeftAnchor(newDirectLabel, 0d);
-            AnchorPane.setRightAnchor(addDirectionBtn, 0d);
-            directionHeaderBox.getChildren().addAll(newDirectLabel, addDirectionBtn);
-            directionsPane.addRow(1, directionHeaderBox);
+            
             // add that AnchorPane->directionHeaderBox to GridPane->directionsPane then each directions line is added
-            DirectionList directionList = new DirectionList(displayedRecipe.getDirections(), directionsPane, displayedRecipe);
+            DirectionList directionList = new DirectionList(directionsPane, displayedRecipe);
+            FlowPane directionHeaderBox = directionList.getDirectionsHeader();
+            directionsPane.addRow(1, directionHeaderBox);
             for (int x=0; x<directionList.getTextField().size(); x++) {
-                directionsPane.addRow(x+2, directionList.getInsertButton().get(x), directionList.getTextField().get(x), directionList.getDeleteButton().get(x));
+                directionsPane.addRow(x+2, directionList.getTextField().get(x));
             }
 
             // Handler when user needs a new Directions input

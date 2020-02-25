@@ -357,7 +357,7 @@ public class Main extends Application {
         VBox.setVgrow(recipeSelectorBox, Priority.ALWAYS);
         mainWindow.setDividerPositions(0.3);
         Scene scene = new Scene(mainWindow);
- //       scene.getStylesheets().add("UI/styles.css");
+        scene.getStylesheets().add("file:///home/vinny/NetBeansProjects/RecipeOrganizer/src/main/java/software/blowtorch/recipeorganizer/styles.css");
         stage.setTitle("Recipe Organizer");
         stage.setScene(scene);
         stage.sizeToScene();

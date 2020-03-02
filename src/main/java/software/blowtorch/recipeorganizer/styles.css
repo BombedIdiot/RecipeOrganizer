@@ -1,3 +1,21 @@
+.root {
+    -base-text-color: #2959C7;
+    -secondary-text-color: #174E65;
+    -button-base-text: black;
+    -hover-text: #29A8C7;
+    -fx-background-color: #C5C5CC;
+
+}
+
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-background-color: linear-gradient(#328BDB 0%, #207BCF 25%, #1973C9 75%, #0A65BF 100%);
+    -fx-text-fill: white;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: -hover-text;
+    -fx-text-fill: white;
+}
 .list-view {
     -fx-font-family: "Arial";
     -fx-font-size: 12pt;
@@ -10,10 +28,19 @@
         linear-gradient(#dddddd 0%, #f6f6f6 50%);
     -fx-background-radius: 8,7,6;
     -fx-background-insets: 0,1,2;
-    -fx-text-fill: black;
+    -fx-text-fill: -button-base-text;
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 5, 0.0 , 0 , 1 );
 }
 
 .button:hover {
-    -fx-text-fill: blue;
+    -fx-text-fill: -hover-text;
+}
+
+.view {
+    -fx-font-family: "Roboto Bold";
+    -fx-font-size: 10pt;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: #C5C5CC;
 }

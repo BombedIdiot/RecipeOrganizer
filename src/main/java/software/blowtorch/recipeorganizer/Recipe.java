@@ -11,6 +11,7 @@ import static software.blowtorch.recipeorganizer.DBHelper.*;
 
 public class Recipe {
 
+    private DisplayRecipe dr;
     private int                   recipeID;
     private String                name;
     private String                description;
@@ -18,16 +19,24 @@ public class Recipe {
     private ArrayList<Ingredient> ingredients;
     private ArrayList<Directions> directions;
 
-
+    protected Recipe () {
+        recipeID = 0;
+        name = "";
+        description = "";
+        category = "";
+        ingredients = new ArrayList<>();
+        directions = new ArrayList<>();
+    }
+    
     protected Recipe (String name) {
-        this.name = name;
         try (Connection conn = DBHelper.connectDB(); 
              PreparedStatement stmt = conn.prepareStatement("SELECT * FROM "+RECIPE_TABLE+" WHERE "+RECIPE_NAME+" = ?")) {
-            stmt.setString(1, this.name);
+            stmt.setString(1, name);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next() != false) {
                     do {
                         this.recipeID = rs.getInt(RECIPE_ID);
+                        this.name = rs.getString(RECIPE_NAME);
                         this.description = rs.getString(RECIPE_DESCRIPTION);
                         this.category = Category.getCategoryByID(rs.getInt(RECIPE_CATEGORY));
                     } while (rs.next());
@@ -39,18 +48,6 @@ public class Recipe {
         this.ingredients = Ingredient.getIngredientsByRecipeID(this.recipeID);
         this.directions = Directions.getDirectionsByRecipeID(this.recipeID);
     }
-    
-    protected Recipe (String name, String description) {
-        this.name = name;
-        this.description = description;
-        this.category = "";
-    }
-    
-    protected Recipe(String name, int category, String description) {
-        this.name = name;
-        this.category = Category.getCategoryByID(category);
-        this.description = description;
-    }
 
     // Getters
     protected int                   getRecipeID()       { return this.recipeID; }
@@ -59,11 +56,16 @@ public class Recipe {
     protected String                getRecipeCategory() { return this.category; }
     protected ArrayList<Ingredient> getIngredients()    { return this.ingredients; }
     protected ArrayList<Directions> getDirections()     { return this.directions; }
+    protected DisplayRecipe getDR() { return this.dr; }
 
     // Setters
+    protected void setName(String name) { this.name = name; }
+    protected void setDescription(String descrip) { this.description = descrip; }
+    protected void setCategory(String category) { this.category = category; }
     protected void setIngredients(ArrayList<Ingredient> i)  { this.ingredients = i; }
     protected void setDirections(ArrayList<Directions> d)   { this.directions = d; }
     protected void addDirections(Directions d)   { this.directions.add(d); }
+    protected void setDR(DisplayRecipe q) { this.dr = q; }
 
 
     protected void removeDirection(Directions d) {
@@ -77,41 +79,67 @@ public class Recipe {
         } 
     }
     
-    protected void removeIngredient(Ingredient i) {
+    protected void removeIngredient(Ingredient i, int id) {
        try (Connection conn = DBHelper.connectDB(); 
-            PreparedStatement stmt = conn.prepareStatement("DELETE FROM "+RECIPE_INGREDIENT_TABLE+" WHERE "+INGREDIENT_FK+" = ? AND "+RECIPE_FK_INGRED+" = ?")) {
-            stmt.setInt(2, this.getRecipeID());
-            stmt.setInt(1, i.getIngredientID());
+            PreparedStatement stmt = conn.prepareStatement("DELETE FROM "+RECIPE_INGREDIENT_TABLE+" WHERE "+RECIPE_INGREDIENT_ID+" = ?")) {
+            stmt.setInt(1, id);
             stmt.execute();
             this.ingredients.remove(i);
-            System.out.println("Deleted "+i.getIngredient()+" From Recipe "+this.getRecipeName());
         } catch (SQLException ex) {
             System.err.println("Error :" + ex.getMessage()+" in removeDirection");
         } 
     }
     
     
-    protected void saveRecipeIngredients() {
-        deleteIngredientsFromRecipe(this.name);
-        String sql = "INSERT INTO "+RECIPE_INGREDIENT_TABLE+" ("+INGREDIENT_FK+","+ RECIPE_FK_INGRED +","+AMOUNT+","+MEASUREMENT_FK+") VALUES (?, ?, ?, ?)";
-        try (Connection conn = DBHelper.connectDB(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            for (int x = 0; x<this.ingredients.size(); x++) {
-                stmt.setInt(1, this.ingredients.get(x).getIngredientID());
-                stmt.setInt(2, this.getRecipeID());
-                stmt.setFloat(3, this.ingredients.get(x).getAmount());
-                stmt.setInt(4, Ingredient.newMeasurement(this.ingredients.get(x).getMeasure()));
-                stmt.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            System.err.println("Error :" + ex.getMessage()+" in saveRecipeIngredients");
+    protected void saveRecipe(Recipe enteredRecipe) {
+        Recipe savedVersion = new Recipe(enteredRecipe.getRecipeName());
+        String sql;
+        if (savedVersion.getRecipeName() == null) {
+            sql = "INSERT INTO "+RECIPE_TABLE+" ("+RECIPE_NAME+", "+RECIPE_DESCRIPTION+", "+ RECIPE_CATEGORY +") VALUES " + "(?, ?, ?)";
+        } else {
+            sql = "UPDATE "+RECIPE_TABLE+" SET "+RECIPE_NAME+"=?, "+RECIPE_DESCRIPTION+"=?, "+ RECIPE_CATEGORY +"=? WHERE "+RECIPE_ID+" = "+enteredRecipe.getRecipeID();
         }
-    }
-
-    protected void saveDirections() {
-        deleteDirectionsFromRecipe(this.name);
-        String sql = "INSERT INTO "+DIRECTIONS_RECIPE_TABLE+" ("+DIRECTIONS_FK+","+ RECIPE_FK_DIRECTION +") VALUES (?, ?)";
         try (Connection conn = DBHelper.connectDB();
-               PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);) {
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setString(1, enteredRecipe.getRecipeName());
+            if (enteredRecipe.getRecipeDesc().equals("")) {
+                preparedStatement.setInt(2, 0);
+            } else {
+                preparedStatement.setString(2, enteredRecipe.getRecipeDesc());
+            }
+            if (enteredRecipe.getRecipeCategory().equals("")) {
+                preparedStatement.setInt(3, 0);
+            } else {
+                preparedStatement.setInt(3, Category.getCategoryID(enteredRecipe.getRecipeCategory()));
+            }
+            preparedStatement.executeUpdate();
+            } catch (SQLException ex) {
+                System.err.println("Error :" + ex.getMessage()+" in saveRecipe INSERT new");
+            }
+   // here recipe exists or was created and enteredRecipe is king. We could check to see if the category or description have changed but
+   // it doesn't really matter, we can just UPDATE with enteredRecipe seeing as that's what the user wants anyway.  
+        
+// Is it really worthwhile to check every ingredient saved vs. entered and UPDATE. Just delete the ingredient list and re-INSERT the new one
+// Maybe if it is completely unchanged, leave it alone.
+        deleteIngredientsFromRecipe(enteredRecipe.recipeID);
+            String ingredientSql = "INSERT INTO "+RECIPE_INGREDIENT_TABLE+" ("+INGREDIENT_FK+","+ RECIPE_FK_INGRED +","+AMOUNT+","+MEASUREMENT_FK+") VALUES (?, ?, ?, ?)";
+            try (Connection conn = DBHelper.connectDB(); PreparedStatement stmt = conn.prepareStatement(ingredientSql)) {
+                for (int x = 0; x < enteredRecipe.getIngredients().size(); x++) {
+                    stmt.setInt(1, enteredRecipe.getIngredients().get(x).getIngredientID());
+                    stmt.setInt(2, enteredRecipe.getRecipeID());
+                    stmt.setFloat(3, enteredRecipe.getIngredients().get(x).getAmount());
+                    stmt.setInt(4, Ingredient.newMeasurement(enteredRecipe.getIngredients().get(x).getMeasure()));
+                    stmt.executeUpdate();
+                }
+            } catch (SQLException ex) {
+                System.err.println("Error :" + ex.getMessage()+" in saveRecipe INSERT Ingredients");
+            }
+    
+    //check directions with directions saved and update if necessary
+        deleteDirectionsFromRecipe(this.recipeID);
+        String directionSql = "INSERT INTO "+DIRECTIONS_RECIPE_TABLE+" ("+DIRECTIONS_FK+","+ RECIPE_FK_DIRECTION +") VALUES (?, ?)";
+        try (Connection conn = DBHelper.connectDB();
+               PreparedStatement stmt = conn.prepareStatement(directionSql, PreparedStatement.RETURN_GENERATED_KEYS);) {
             for (int x = 0; x<this.directions.size(); x++) {
                 stmt.setInt(1, this.directions.get(x).getDirectionID());
                 stmt.setInt(2, this.getRecipeID());
@@ -126,62 +154,34 @@ public class Recipe {
             System.err.println("Error :" + ex.getMessage()+" in saveRecipeIngredients");
         }
     }
-
-    protected void saveRecipe() {
-        try {
-            Connection conn = DBHelper.connectDB();
-            PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO "+RECIPE_TABLE+" ("+RECIPE_NAME+", "+RECIPE_DESCRIPTION+", "+ RECIPE_CATEGORY +") VALUES " +
-                    "(?, ?, ?)");
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, description);
-            if (this.category.equals("No Category")) {
-                preparedStatement.setInt(3, 0);
-            } else {
-                preparedStatement.setInt(3, Category.getCategoryID(this.category));
-            }
-            preparedStatement.executeUpdate();
-            preparedStatement.close();
-            conn.close();
-        } catch (SQLException ex) {
-            System.err.println("Error :" + ex.getMessage()+" in saveRecipe");
-        }
-    }
     
-    protected static void removeRecipe(String recipe) {
-        deleteIngredientsFromRecipe(recipe);
-        try {
-            try (Connection conn = DBHelper.connectDB(); PreparedStatement statement = conn.prepareStatement("DELETE FROM "+ RECIPE_TABLE +" WHERE "+ RECIPE_NAME +" = ?")) {
-                statement.setString(1, recipe);
-                statement.executeUpdate();
-            }
+    protected static void removeRecipe(Recipe recipe) {
+        deleteIngredientsFromRecipe(recipe.getRecipeID());
+        deleteDirectionsFromRecipe(recipe.getRecipeID());
+        System.out.println("DELETE FROM "+ RECIPE_TABLE +" WHERE "+ RECIPE_ID +" = " + recipe.getRecipeID());
+        try (Connection conn = DBHelper.connectDB(); PreparedStatement statement = conn.prepareStatement("DELETE FROM "+ RECIPE_TABLE +" WHERE "+ RECIPE_ID +" = ?")) {
+            statement.setInt(1, recipe.getRecipeID());
+            statement.executeUpdate();
         } catch (SQLException ex) {
             System.err.println("Exception: " + ex.getMessage()+" in removeRecipe");
         }
     }
 
-    protected static void deleteIngredientsFromRecipe(String recipe) {
-        try {
-            Connection conn = DBHelper.connectDB();
-            PreparedStatement statement = conn.prepareStatement("DELETE FROM "+ RECIPE_INGREDIENT_TABLE +" WHERE "+ RECIPE_FK_INGRED +
-                                                                "= (SELECT "+RECIPE_ID+" FROM "+RECIPE_TABLE+" WHERE "+RECIPE_NAME+"=?)");
-            statement.setString(1, recipe);
+    protected static void deleteIngredientsFromRecipe(int recipe) {
+        try ( Connection conn = DBHelper.connectDB();
+            PreparedStatement statement = conn.prepareStatement("DELETE FROM "+ RECIPE_INGREDIENT_TABLE +" WHERE "+ RECIPE_FK_INGRED + "= ?")) {
+            statement.setInt(1, recipe);
             statement.executeUpdate();
-            statement.close();
-            conn.close();
         } catch (SQLException ex) {
             System.err.println("Exception: " + ex.getMessage()+" in deleteIngredientsFromRecipe");
         }
     }
 
-    protected static void deleteDirectionsFromRecipe(String recipe) {
-        try {
-            Connection conn = DBHelper.connectDB();
-            PreparedStatement statement = conn.prepareStatement("DELETE FROM "+ DIRECTIONS_RECIPE_TABLE +" WHERE "+ RECIPE_FK_DIRECTION +
-                    "= (SELECT "+RECIPE_ID+" FROM "+RECIPE_TABLE+" WHERE "+RECIPE_NAME+"=?)");
-            statement.setString(1, recipe);
+    protected static void deleteDirectionsFromRecipe(int recipe) {
+        try ( Connection conn = DBHelper.connectDB();
+            PreparedStatement statement = conn.prepareStatement("DELETE FROM "+ DIRECTIONS_RECIPE_TABLE +" WHERE "+ RECIPE_FK_DIRECTION + "= ?")) {
+            statement.setInt(1, recipe);
             statement.executeUpdate();
-            statement.close();
-            conn.close();
         } catch (SQLException ex) {
             System.err.println("Exception: " + ex.getMessage()+" in deleteDirectionsFromRecipe");
         }

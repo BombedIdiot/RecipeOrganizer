@@ -32,8 +32,6 @@ public class DirectionList {
     private final GridPane              directionsDisplay;
     private final ArrayList<TextField>  tf = new ArrayList<>();
     private final ArrayList<Directions> direction;
-    private final ArrayList<Button>     insertButton = new ArrayList<>();
-    private final ArrayList<Button>     deleteButton = new ArrayList<>();
     private final ArrayList<Button>     moveUpButton = new ArrayList<>();
     private final ArrayList<Button>     moveDownButton = new ArrayList<>();
     private static final int            DELETE = 0;
@@ -70,6 +68,7 @@ public class DirectionList {
                     directionsDisplay.getChildren().remove(tf.get(valueBox.getSelectionModel().getSelectedIndex()));
                     recipe.removeDirection(direction.get(valueBox.getSelectionModel().getSelectedIndex()));
                     tf.remove(tf.get(valueBox.getSelectionModel().getSelectedIndex()));
+                    recipe.getDR().editRecipe();
                     break;
                 case INSERT_BEFORE:
                     int beforeIndex = valueBox.getSelectionModel().getSelectedIndex();
@@ -119,6 +118,4 @@ public class DirectionList {
         return this.direction;
     }
     protected ArrayList<TextField> getTextField() { return this.tf; }
-    protected ArrayList<Button> getInsertButton() { return this.insertButton; }
-    protected ArrayList<Button> getDeleteButton() { return this.deleteButton; }    
 }

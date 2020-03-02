@@ -12,6 +12,7 @@ import static software.blowtorch.recipeorganizer.DBHelper.*;
 public class Ingredient {
 
     private int ingredientID = 0;
+    private int recipeIngredientID = 0;
     private String ingredient;
     private float amount;
     private String measure;
@@ -27,15 +28,17 @@ public class Ingredient {
     }
 
     // Getters
-    protected int getIngredientID() { return this.ingredientID; }
-    protected String getIngredient() { return this.ingredient; }
-    protected float getAmount() { return this.amount; }
-    protected String getMeasure() { return this.measure; }
+    protected int getIngredientID()       { return this.ingredientID; }
+    protected int getRecipeIngredientID() { return this.recipeIngredientID; }
+    protected String getIngredient()      { return this.ingredient; }
+    protected float getAmount()           { return this.amount; }
+    protected String getMeasure()         { return this.measure; }
 
     // Setters
-    protected void setIngredientID(int id) { this.ingredientID = id; }
-    protected void setIngredient(String i) { this.ingredient = i; }
-    protected void setAmount(float amount) { this.amount = amount; }
+    protected void setIngredientID(int id)         { this.ingredientID = id; }
+    protected void setRecipeIngredientID(int riID) { this.recipeIngredientID = riID; }
+    protected void setIngredient(String i)         { this.ingredient = i; }
+    protected void setAmount(float amount)         { this.amount = amount; }
     protected void setMeasure(String m) {
         newMeasurement(m);
         this.measure = m;
@@ -49,8 +52,9 @@ public class Ingredient {
         ArrayList<Ingredient> ing = new ArrayList<>();
         try {
             conn = DBHelper.connectDB();
-            String sql = "SELECT " + AMOUNT + "," + MEASUREMENT_NAME + "," + INGREDIENT_NAME + " FROM " + INGREDIENT_TABLE + "," + MEASUREMENT_TABLE + "," + RECIPE_INGREDIENT_TABLE +
-                    " WHERE " + INGREDIENT_FK + "=" + INGREDIENT_ID + " AND " + MEASUREMENT_ID + "=" + MEASUREMENT_FK + " AND " + RECIPE_FK_INGRED + "=?";
+            String sql = "SELECT "+RECIPE_INGREDIENT_ID+", " + AMOUNT + "," + MEASUREMENT_NAME + "," + INGREDIENT_NAME + " FROM " + INGREDIENT_TABLE + "," + 
+                          MEASUREMENT_TABLE + "," + RECIPE_INGREDIENT_TABLE + " WHERE " + INGREDIENT_FK + "=" + INGREDIENT_ID + " AND " +
+                          MEASUREMENT_ID + "=" + MEASUREMENT_FK + " AND " + RECIPE_FK_INGRED + "=?";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, id);
             rs = stmt.executeQuery();
@@ -59,6 +63,7 @@ public class Ingredient {
                     Ingredient i = new Ingredient(rs.getString(INGREDIENT_NAME));
                     i.setAmount(rs.getFloat(AMOUNT));
                     i.setMeasure(rs.getString(MEASUREMENT_NAME));
+                    i.setRecipeIngredientID(rs.getInt(RECIPE_INGREDIENT_ID));
                     ing.add(i);
                 } while (rs.next());
                 return ing;

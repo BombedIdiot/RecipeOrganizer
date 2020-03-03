@@ -8,10 +8,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 /*
@@ -38,7 +36,7 @@ import javafx.scene.layout.VBox;
 public class DisplayRecipe {
     
     private       Recipe        recipeToDisplay = null;
-    private final FlowPane      recipeHead;
+    private final GridPane      recipeHead;
     private final GridPane      ingredientsPane;
     private final GridPane      directionsPane;
     private final VBox          mainRecipeBox;
@@ -48,8 +46,7 @@ public class DisplayRecipe {
     private final Separator     separator2;
 
     public DisplayRecipe() {
-        recipeHead = new FlowPane();
-        recipeHead.setMaxWidth(1500);
+        recipeHead = new GridPane();
         ingredientsPane = new GridPane();
         directionsPane = new GridPane();
         mainRecipeBox = new VBox();
@@ -62,7 +59,6 @@ public class DisplayRecipe {
     // FlowPane->editRecipeHead holds Name/Category/Description on Edit
     // This is because the we have 3 fields to display on view, 6 to display on edit
         recipeHead.setPadding(new Insets(10));
-        recipeHead.setHgap(20);
     // 2 GridPanes for holding ingredients and directions
         ingredientsPane.setPadding(new Insets(30));
         directionsPane.setPadding(new Insets(30));
@@ -88,9 +84,9 @@ public class DisplayRecipe {
         mainRecipeBox.getChildren().clear();
         recipeBox.getChildren().clear();
 
-        Label nameLabel = new Label("Name :" + recipeToDisplay.getRecipeName());
-        Label descriptionLabel = new Label("Description :" + recipeToDisplay.getRecipeDesc());
-        Label categoryLabel = new Label("Category :" + recipeToDisplay.getRecipeCategory());
+        Label nameLabel = new Label("Name : " + recipeToDisplay.getRecipeName());
+        Label descriptionLabel = new Label("Description : " + recipeToDisplay.getRecipeDesc());
+        Label categoryLabel = new Label("Category : " + recipeToDisplay.getRecipeCategory());
         ingredientsPane.addRow(1, new Label("Qty"), new Label("Measure"), new Label("Ingredients"));
         ArrayList<Ingredient> ingredientsList = recipeToDisplay.getIngredients();
         for (int i = 0; i < ingredientsList.size(); i++) {
@@ -104,9 +100,15 @@ public class DisplayRecipe {
                 directionsPane.addRow(i + 2, new Label(directionsList.get(i).getDirection()));
             }
         }
-        recipeHead.getChildren().addAll(nameLabel, categoryLabel, descriptionLabel);
+        recipeHead.addRow(0, nameLabel);
+        recipeHead.addRow(1, new Label());
+        recipeHead.addRow(2, categoryLabel);
+        recipeHead.addRow(3, new Label());
+        recipeHead.addRow(4, descriptionLabel);
         recipeBox.getChildren().add(recipeHead);
         mainRecipeBox.getChildren().addAll(separator1, ingredientsPane, separator2, directionsPane);
+        ingredientsPane.setStyle("-fx-border-color: #C5C5CC");
+        directionsPane.setStyle("-fx-border-color: #C5C5CC");
         mainRecipePane.setContent(mainRecipeBox);
         recipeBox.getChildren().add(mainRecipePane);
     }
@@ -119,8 +121,10 @@ public class DisplayRecipe {
         recipeBox.getChildren().clear();
         Label nameLabel = new Label("Name :");
         TextField nameField = new TextField();
+        nameField.setPrefWidth(250.0);
         Label descriptionLabel = new Label("Description :");
         TextField descriptionField = new TextField();
+        descriptionField.setPrefWidth(400.0);
         Label categoryLabel = new Label("Category :");
         TextField categoryField = new TextField();
         if (this.recipeToDisplay != null) {
@@ -170,7 +174,9 @@ public class DisplayRecipe {
 // 2 GridPanes holding instructions and recipes put into an HBox and then added to the HBox->bottomBox
 // VBox->recipeBox holds recipeTopBox, the newly created HBox->bottomBox and the buttonBarBox
 // that added into the rightPane for main SplitPane->mainWindow
-        recipeHead.getChildren().addAll(nameLabel, nameField, categoryLabel, categoryField, descriptionLabel, descriptionField);
+        recipeHead.addRow(0, nameLabel, nameField);
+        recipeHead.addRow(1, categoryLabel, categoryField);
+        recipeHead.addRow(2, descriptionLabel, descriptionField);
         ingredientsPane.setStyle("-fx-border-color: black");
         directionsPane.setStyle("-fx-border-color: black");
         double width = recipeBox.getWidth()-100.0;

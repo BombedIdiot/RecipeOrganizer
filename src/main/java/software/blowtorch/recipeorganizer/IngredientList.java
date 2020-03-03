@@ -62,9 +62,12 @@ public class IngredientList {
             for (int t=0; t<measures.size(); t++) {
                 measureComboBox.getItems().add(measures.get(t));
             }
+            measureComboBox.setEditable(true);
+            measureComboBox.setPrefWidth(125.0);
             measureComboBoxArrayList.add(measureComboBox);
             measureComboBoxArrayList.get(c).getSelectionModel().select(this.ingredients.get(c).getMeasure());
             TextField ingredientField = new TextField(this.ingredients.get(c).getIngredient());
+            ingredientField.setPrefWidth(400.0);
             ingredientArrayList.add(ingredientField);
             deleteIngredientBtn.add(new Button("-"));
             deleteIngredientBtn.get(deleteIngredientBtn.size()-1).setTooltip(new Tooltip("Remove Ingredient"));
@@ -98,6 +101,8 @@ public class IngredientList {
             quantityArrayList.add(new TextField());
             quantityArrayList.get(quantityArrayList.size()-1).setMaxWidth(50);
             measureComboBoxArrayList.add(new ComboBox());
+            measureComboBoxArrayList.get(measureComboBoxArrayList.size()-1).setEditable(true);
+            measureComboBoxArrayList.get(measureComboBoxArrayList.size()-1).setPrefWidth(125.0);
             for (int t=0; t<measures.size(); t++) {
                 measureComboBoxArrayList.get(measureComboBoxArrayList.size()-1).getItems().add(measures.get(t));
             }
